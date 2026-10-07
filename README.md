@@ -1,92 +1,136 @@
 # KoderTroop Task Manager
 
-A production-quality, full-stack task management application built for the KoderTroop assessment. Features a GraphQL API backed by MongoDB, Redis caching, and Elasticsearch full-text search, with a modern React + TypeScript frontend.
+A full-stack task management application built with Node.js, Express, GraphQL, MongoDB, Redis, Elasticsearch, and React.js.
+
+---
+
+## Live Demo
+
+- **Frontend:** http://localhost:5173
+- **GraphQL API:** http://localhost:4000/graphql
+- **Health Check:** http://localhost:4000/health
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Version |
+### Backend
+| Technology | Version | Purpose |
 |---|---|---|
-| Frontend | React + TypeScript | 18.x / 5.x |
-| Build Tool | Vite | 5.x |
-| Styling | Tailwind CSS | 3.x |
-| GraphQL Client | Apollo Client | 3.x |
-| Routing | React Router | 7.x |
-| Icons | Lucide React | 1.x |
-| Backend | Node.js + Express | 18+ / 4.x |
-| API Layer | Apollo Server + GraphQL | 3.x / 16.x |
-| Database | MongoDB + Mongoose | 8.x |
-| Cache | Redis | 4.x client |
-| Search | Elasticsearch | 8.x client |
-| Auth | JSON Web Tokens (JWT) | 9.x |
+| Node.js | 18+ | Runtime environment |
+| Express | 4.x | HTTP server framework |
+| Apollo Server | 3.x | GraphQL server |
+| GraphQL | 16.x | API query language |
+| MongoDB | 6+ | Primary database |
+| Mongoose | 8.x | MongoDB ODM |
+| Redis | 4.x (client) | Task list caching |
+| Elasticsearch | 8/9.x | Full-text search |
+| JSON Web Tokens | 9.x | Authentication |
+| bcryptjs | 2.x | Password hashing |
+| TypeScript | 7.x | Type safety |
+
+### Frontend
+| Technology | Version | Purpose |
+|---|---|---|
+| React.js | 18.x | UI framework |
+| TypeScript | 5.x | Type safety |
+| Vite | 5.x | Build tool |
+| Apollo Client | 3.x | GraphQL client |
+| React Router | 7.x | Client-side routing |
+| Tailwind CSS | 3.x | Styling |
+| Lucide React | 1.x | Icons |
+
+---
+
+## Features
+
+### Core (Required)
+- ✅ User registration and login with JWT authentication
+- ✅ Create, Read, Update, Delete tasks
+- ✅ Mark tasks as completed
+- ✅ MongoDB storage with Mongoose ODM
+- ✅ Redis caching — cache-first reads, 10-minute TTL, per-user cache keys, invalidation on every mutation
+- ✅ Elasticsearch full-text search on task title and description
+- ✅ Elasticsearch index sync on every create, update, delete
+- ✅ GraphQL API: `getTasks`, `createTask`, `updateTask`, `deleteTask`, `searchTasks`
+- ✅ Context API for authentication state management
+- ✅ User-specific tasks — each user sees only their own tasks
+- ✅ Responsive UI with TailwindCSS
+- ✅ Filter tasks by completion status (All / Active / Completed)
+
+### Bonus (Optional — All Implemented)
+- ✅ Server-side pagination on task list
+- ✅ Task priority levels — High, Medium, Low with color-coded badges
+- ✅ Filter and sort by priority
+- ✅ Task due dates with overdue highlighting
+- ✅ 5 sort options — Newest, Oldest, Title A→Z, Priority High→Low, Priority Low→High
 
 ---
 
 ## Project Structure
 
 ```
-task/
-├── client/                         # React + Vite frontend
+kodertroop-task-manager/
+├── client/                          # React frontend
 │   ├── src/
-│   │   ├── components/             # Reusable UI components
-│   │   │   ├── EmptyState.tsx      # Empty list display
-│   │   │   ├── LoadingSpinner.tsx  # Animated spinner
-│   │   │   ├── Navbar.tsx          # Sticky top navigation
-│   │   │   ├── Pagination.tsx      # Page prev/next controls
-│   │   │   ├── PriorityBadge.tsx   # Colored priority chip
-│   │   │   ├── SearchBar.tsx       # Debounced search input
-│   │   │   ├── TaskCard.tsx        # Individual task row
-│   │   │   └── TaskModal.tsx       # Create/edit modal form
+│   │   ├── components/
+│   │   │   ├── EmptyState.tsx       # Empty list display
+│   │   │   ├── LoadingSpinner.tsx   # Animated loading
+│   │   │   ├── Navbar.tsx           # Top navigation with progress bar
+│   │   │   ├── Pagination.tsx       # Page controls
+│   │   │   ├── PriorityBadge.tsx    # Color-coded priority chip
+│   │   │   ├── SearchBar.tsx        # Debounced Elasticsearch search
+│   │   │   ├── TaskCard.tsx         # Individual task display
+│   │   │   └── TaskModal.tsx        # Create / edit task form
 │   │   ├── contexts/
-│   │   │   ├── AuthContext.tsx     # JWT session + user state
-│   │   │   └── ToastContext.tsx    # Global toast notifications
+│   │   │   ├── AuthContext.tsx      # JWT session management (Context API)
+│   │   │   └── ToastContext.tsx     # Global toast notifications
 │   │   ├── graphql/
-│   │   │   ├── auth.ts             # Auth mutations + ME query
-│   │   │   ├── client.ts           # Apollo Client setup
-│   │   │   └── tasks.ts            # Task queries + mutations
+│   │   │   ├── auth.ts              # Auth mutations + ME query
+│   │   │   ├── client.ts            # Apollo Client + auth link
+│   │   │   └── tasks.ts             # Task queries and mutations
 │   │   ├── pages/
-│   │   │   ├── Dashboard.tsx       # Main task management page
-│   │   │   ├── Login.tsx           # Sign-in page
-│   │   │   └── Register.tsx        # Sign-up page
-│   │   ├── types/
-│   │   │   ├── auth.ts             # Auth TypeScript types
-│   │   │   └── task.ts             # Task TypeScript types
-│   │   └── App.tsx                 # Router + providers
-│   ├── .env                        # Frontend env vars
+│   │   │   ├── Dashboard.tsx        # Main task management page
+│   │   │   ├── Login.tsx            # Sign-in page
+│   │   │   └── Register.tsx         # Sign-up page
+│   │   └── types/
+│   │       ├── auth.ts              # Auth TypeScript interfaces
+│   │       └── task.ts              # Task TypeScript interfaces
+│   ├── .env                         # Frontend environment variables
+│   ├── tailwind.config.js
 │   └── package.json
 │
-└── server/                         # Express + Apollo Server backend
+└── server/                          # Node.js backend
     ├── src/
     │   ├── config/
-    │   │   ├── database.ts         # MongoDB connection
-    │   │   └── index.ts            # Centralized config from .env
+    │   │   ├── database.ts          # MongoDB connection
+    │   │   └── index.ts             # Environment config
     │   ├── errors/
-    │   │   └── AppError.ts         # Custom error hierarchy
+    │   │   └── AppError.ts          # Custom error classes
     │   ├── graphql/
-    │   │   ├── formatError.ts      # Apollo error formatter
-    │   │   └── typeDefs.ts         # GraphQL schema
+    │   │   ├── formatError.ts       # Apollo error formatter
+    │   │   └── typeDefs.ts          # GraphQL schema definition
     │   ├── middleware/
-    │   │   ├── auth.ts             # JWT extraction + context builder
-    │   │   └── errorHandler.ts     # Express error handler
+    │   │   ├── auth.ts              # JWT extraction + context builder
+    │   │   └── errorHandler.ts      # Express error handler
     │   ├── models/
-    │   │   ├── Task.ts             # Mongoose Task schema
-    │   │   └── User.ts             # Mongoose User schema
+    │   │   ├── Task.ts              # Mongoose Task schema
+    │   │   └── User.ts              # Mongoose User schema
     │   ├── resolvers/
-    │   │   └── index.ts            # All GraphQL resolvers
+    │   │   └── index.ts             # All GraphQL resolvers
     │   ├── services/
-    │   │   ├── authService.ts      # Register / login logic
-    │   │   ├── cacheService.ts     # Redis get/set/invalidate
-    │   │   ├── elasticsearchClient.ts # ES connection
-    │   │   ├── redisClient.ts      # Redis connection
-    │   │   ├── searchService.ts    # ES index + search
-    │   │   └── taskService.ts      # Task CRUD + pagination
-    │   ├── types/index.ts          # Shared server types
+    │   │   ├── authService.ts       # Registration + login logic
+    │   │   ├── cacheService.ts      # Redis get / set / invalidate
+    │   │   ├── elasticsearchClient.ts  # ES connection
+    │   │   ├── redisClient.ts       # Redis connection
+    │   │   ├── searchService.ts     # ES index + search
+    │   │   └── taskService.ts       # Task CRUD + pagination
     │   ├── utils/
-    │   │   ├── jwt.ts              # Sign + verify tokens
-    │   │   └── logger.ts           # Structured logger
-    │   └── index.ts                # Server entry point
-    ├── .env                        # Server env vars
+    │   │   ├── jwt.ts               # Sign + verify JWT tokens
+    │   │   └── logger.ts            # Structured console logger
+    │   └── index.ts                 # Server entry point
+    ├── .env                         # Server environment variables
+    ├── .env.example                 # Environment variable template
     └── package.json
 ```
 
@@ -94,34 +138,41 @@ task/
 
 ## Prerequisites
 
-You need the following installed and running:
+Install and run these services before starting:
 
 | Service | Version | Download |
 |---|---|---|
 | Node.js | >= 18.x | https://nodejs.org |
 | MongoDB | >= 6.x | https://www.mongodb.com/try/download/community |
-| Redis | >= 7.x | https://redis.io/download (Windows: https://github.com/tporadowski/redis/releases) |
+| Redis | >= 5.x | https://github.com/tporadowski/redis/releases (Windows) |
 | Elasticsearch | >= 8.x | https://www.elastic.co/downloads/elasticsearch |
 
 ---
 
 ## Setup & Installation
 
-### Step 1 — Install Dependencies
+### Step 1 — Clone the repository
+
+```bash
+git clone https://github.com/sujan7989/kodertroop-task-manager.git
+cd kodertroop-task-manager
+```
+
+### Step 2 — Install dependencies
 
 ```bash
 # Backend
 cd server
 npm install
 
-# Frontend (separate terminal)
-cd client
+# Frontend
+cd ../client
 npm install
 ```
 
-### Step 2 — Configure Environment Variables
+### Step 3 — Configure environment variables
 
-**Server** — `server/.env` is already pre-configured for local development:
+**Backend** — `server/.env` (copy from `.env.example`):
 
 ```env
 PORT=4000
@@ -137,47 +188,48 @@ ELASTICSEARCH_NODE=http://localhost:9200
 ELASTICSEARCH_USERNAME=
 ELASTICSEARCH_PASSWORD=
 
-JWT_SECRET=dev-jwt-secret-change-me-before-production-abc123xyz789
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
 JWT_EXPIRES_IN=7d
 ```
 
-**Client** — `client/.env` is already pre-configured:
+**Frontend** — `client/.env`:
 
 ```env
 VITE_API_URL=http://localhost:4000
 VITE_GRAPHQL_URL=http://localhost:4000/graphql
 ```
 
-### Step 3 — Start External Services
+### Step 4 — Start external services
 
-**MongoDB:**
+**MongoDB** (Windows — runs as a service after install, auto-starts):
 ```bash
-mongod
-# or if installed as a service, it may already be running
+# Verify it is running
+Get-Service -Name MongoDB
 ```
 
-**Redis:**
+**Redis** (Windows — runs as a service after install):
 ```bash
-redis-server
-# Windows: run redis-server.exe from your Redis install directory
+# Verify it is running
+redis-cli ping
+# Expected: PONG
 ```
 
-**Elasticsearch:**
+**Elasticsearch** (Windows — must be started manually):
 ```bash
-# Linux/Mac
-./bin/elasticsearch
+# Important: add this line to config/elasticsearch.yml first:
+# xpack.security.enabled: false
 
-# Windows
-.\bin\elasticsearch.bat
+# Then start:
+D:\elasticsearch\elasticsearch-9.5.5\bin\elasticsearch.bat
+
+# Verify (in a new terminal, after ~60 seconds):
+curl http://localhost:9200
+# Expected: { "tagline": "You Know, for Search" }
 ```
 
-> **Elasticsearch 8 note:** Security is enabled by default. Either:
-> - Add `xpack.security.enabled: false` to `config/elasticsearch.yml` (easiest for local dev), or
-> - Set `ELASTICSEARCH_USERNAME` and `ELASTICSEARCH_PASSWORD` in `server/.env`
->
-> The server handles ES being unavailable gracefully — tasks still work, only search is disabled.
+> **Note:** Elasticsearch takes 30–60 seconds to fully start. The app works without it (tasks still load) — only search is unavailable until ES is ready.
 
-### Step 4 — Run Development Servers
+### Step 5 — Start the application
 
 ```bash
 # Terminal 1 — Backend (port 4000)
@@ -191,30 +243,32 @@ npm run dev
 
 Open **http://localhost:5173** in your browser.
 
-GraphQL Playground: **http://localhost:4000/graphql**
-Health check: **http://localhost:4000/health**
-
 ---
 
-## Available Scripts
+## Environment Variables Reference
 
-### Backend (`/server`)
+### Server
 
-```bash
-npm run dev        # Start dev server with hot-reload
-npm run build      # Compile TypeScript → dist/
-npm run start      # Run compiled production build
-npm run typecheck  # Validate types without emitting
-```
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `4000` | Express server port |
+| `NODE_ENV` | `development` | Environment mode |
+| `MONGODB_URI` | — | MongoDB connection string |
+| `REDIS_HOST` | `localhost` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
+| `REDIS_PASSWORD` | _(empty)_ | Redis password (leave blank for local) |
+| `ELASTICSEARCH_NODE` | `http://localhost:9200` | Elasticsearch URL |
+| `ELASTICSEARCH_USERNAME` | _(empty)_ | ES username (leave blank if security disabled) |
+| `ELASTICSEARCH_PASSWORD` | _(empty)_ | ES password |
+| `JWT_SECRET` | — | Secret key for signing JWT tokens |
+| `JWT_EXPIRES_IN` | `7d` | Token expiry duration |
 
-### Frontend (`/client`)
+### Client
 
-```bash
-npm run dev        # Vite dev server with HMR (port 5173)
-npm run build      # Type-check + Vite production build
-npm run preview    # Preview the production build
-npm run typecheck  # Validate types without emitting
-```
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Backend base URL |
+| `VITE_GRAPHQL_URL` | GraphQL endpoint URL |
 
 ---
 
@@ -223,33 +277,39 @@ npm run typecheck  # Validate types without emitting
 ### Queries
 
 ```graphql
-# Get paginated task list (Redis-cached for default params)
+# Get all tasks for the logged-in user (paginated, Redis-cached)
 getTasks(page: Int, limit: Int, filter: TaskFilter): PaginatedTasks!
 
 # Full-text search via Elasticsearch
 searchTasks(query: String!): [Task!]!
 
-# Get current authenticated user
+# Get the currently authenticated user
 me: User
 
-# Health check
+# Server health check
 _health: Health!
 ```
 
 ### Mutations
 
 ```graphql
-# Auth
+# Register a new user
 register(input: RegisterInput!): AuthPayload!
+
+# Login with email and password
 login(input: LoginInput!): AuthPayload!
 
-# Tasks (all require authentication)
+# Create a new task (requires authentication)
 createTask(input: CreateTaskInput!): Task!
+
+# Update a task (requires authentication + ownership)
 updateTask(id: ID!, input: UpdateTaskInput!): Task!
+
+# Delete a task (requires authentication + ownership)
 deleteTask(id: ID!): Boolean!
 ```
 
-### Types
+### GraphQL Types
 
 ```graphql
 type Task {
@@ -258,8 +318,8 @@ type Task {
   description: String!
   completed: Boolean!
   userId: ID!
-  priority: TaskPriority!   # low | medium | high
-  dueDate: String           # ISO 8601 date string
+  priority: TaskPriority!    # low | medium | high
+  dueDate: String            # ISO 8601 string, optional
   createdAt: String!
   updatedAt: String!
 }
@@ -273,76 +333,157 @@ type PaginatedTasks {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
 }
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+```
+
+### Example GraphQL Queries
+
+**Register:**
+```graphql
+mutation {
+  register(input: {
+    name: "John Doe"
+    email: "john@example.com"
+    password: "Secret@123"
+  }) {
+    token
+    user { id name email }
+  }
+}
+```
+
+**Create a task:**
+```graphql
+mutation {
+  createTask(input: {
+    title: "Build the API"
+    description: "Set up Apollo Server with Express"
+    priority: high
+    dueDate: "2026-11-30T00:00:00Z"
+  }) {
+    id title priority completed
+  }
+}
+```
+
+**Search tasks:**
+```graphql
+query {
+  searchTasks(query: "Redis cache") {
+    id title description priority
+  }
+}
 ```
 
 ---
 
-## Features
+## How Redis Caching Works
 
-### Core
-- ✅ User registration and login with JWT
-- ✅ Create, read, update, delete tasks
-- ✅ Mark tasks as completed
-- ✅ Full-text search by title and description (Elasticsearch)
-- ✅ Task list caching with Redis (10-minute TTL, per-user keys)
-- ✅ Cache invalidation on every mutation
-- ✅ Real-time ES index sync on create/update/delete
+1. When `getTasks` is called, the server first checks Redis for key `tasks:user:<userId>`
+2. **Cache hit** → returns data directly from Redis (fast)
+3. **Cache miss** → fetches from MongoDB, stores result in Redis with **600-second TTL (10 minutes)**
+4. On every `createTask`, `updateTask`, or `deleteTask` → cache is immediately **invalidated** for that user
+5. Next `getTasks` call re-fetches from MongoDB and re-populates the cache
 
-### Bonus Features Implemented
-- ✅ **Task priority levels** — high / medium / low with color-coded badges
-- ✅ **Due dates** — optional date picker, overdue highlighting
-- ✅ **Pagination** — server-side with `page` + `limit` params
-- ✅ **Filter by completion status** — All / Active / Completed
-- ✅ **Filter by priority** — All / High / Medium / Low
-- ✅ **Sort** — Newest, Oldest, Title A→Z, Priority High→Low, Priority Low→High
-
-### UI Highlights
-- Dark theme with Tailwind CSS custom design tokens
-- Glassmorphism-style cards and modals
-- Responsive layout (mobile + desktop)
-- Sticky navigation with task stats counter
-- Debounced search (300ms) with live results
-- Toast notifications for all actions
-- Loading states and empty states
+This means reads are fast (Redis) and data is always fresh after any write.
 
 ---
 
-## Architecture Decisions
+## How Elasticsearch Search Works
 
-### Why Apollo Server 3 (not 4)?
-Apollo Server 3 integrates cleanly with Express via `applyMiddleware`, making it straightforward to layer custom Express middleware (CORS, health check, error handlers) alongside GraphQL. Apollo Server 4 requires a different integration pattern. This project targets Express 4 compatibility.
-
-### Why Redis cache only for the default page?
-Caching every combination of `(page, limit, filter)` would require complex cache key management and cause high memory usage. The strategy caches the full unfiltered task list for a user on the default fetch (page 1, limit 20, no filter), then serves filtered/paginated views from that cache. All other queries hit MongoDB directly. This balances cache hit rate with implementation simplicity.
-
-### Why re-fetch from MongoDB for cache population?
-When a paginated result triggers a cache fill, the service fetches the complete unfiltered user task list to store — not just the current page. This ensures the cache always reflects the true complete list, so subsequent cache hits can be paginated in memory without serving stale partial data.
-
-### Why Elasticsearch multi_match with bool/filter?
-The `bool.filter` clause scopes results to the authenticated user's tasks before scoring (no relevance for the filter condition), while `bool.must` + `multi_match` scores against `title` and `description` fields. This ensures users only see their own tasks in search results and relevance ranking applies only to text matching.
-
-### Why graceful degradation for Redis and Elasticsearch?
-Both services are wrapped in try/catch throughout. If Redis is down, every operation falls through to MongoDB — no data loss or crashes. If Elasticsearch is down, `getTasks` still works; only `searchTasks` returns an error. This makes the app resilient to infrastructure issues in development.
-
-### Why TypeScript strict mode everywhere?
-`strict: true` plus `noUnusedLocals` and `noUnusedParameters` catches entire classes of bugs at compile time. The cost is more upfront type annotation; the benefit is zero runtime surprises from type mismatches.
+1. Every time a task is **created** → document is indexed in Elasticsearch
+2. Every time a task is **updated** → document is re-indexed in Elasticsearch
+3. Every time a task is **deleted** → document is removed from Elasticsearch
+4. `searchTasks(query)` runs a **`multi_match`** query across both `title` and `description` fields
+5. Results are scoped to the authenticated user via a `bool.filter` clause
+6. If Elasticsearch is unavailable, the app degrades gracefully — tasks still load, only search returns an error
 
 ---
 
 ## Password Requirements
 
-Registration enforces:
-- Minimum 8 characters
-- At least one uppercase letter
-- At least one lowercase letter  
-- At least one digit
+When registering, passwords must have:
+- Minimum **8 characters**
+- At least **one uppercase letter** (A–Z)
+- At least **one lowercase letter** (a–z)
+- At least **one number** (0–9)
+
+Example valid password: `MyPass@123`
 
 ---
 
-## Security Notes
+## Available Scripts
 
-- JWT tokens are signed with HS256 and expire in 7 days (configurable via `JWT_EXPIRES_IN`)
-- Passwords are hashed with bcrypt at 12 rounds
-- All task mutations/queries verify ownership — users can only access their own tasks
-- The `Authorization: Bearer <token>` header is parsed on every request
-- Missing or invalid tokens return `UNAUTHENTICATED` GraphQL errors, not 401 HTTP errors (GraphQL convention)
+### Backend (`/server`)
+
+```bash
+npm run dev        # Start server (compiles TypeScript then runs with Node)
+npm run build      # Compile TypeScript to dist/
+npm run start      # Run compiled production build
+npm run typecheck  # Validate TypeScript types without emitting
+```
+
+### Frontend (`/client`)
+
+```bash
+npm run dev        # Start Vite dev server on port 5173
+npm run build      # Type-check + Vite production build
+npm run preview    # Preview the production build locally
+npm run typecheck  # Validate TypeScript types
+```
+
+---
+
+## Architecture Decisions
+
+### Why Apollo Server 3 with Express (not standalone)?
+Apollo Server 3 integrates with Express via `applyMiddleware`, making it straightforward to add custom Express middleware like CORS, health check endpoints, and error handlers alongside GraphQL. This gives full control over the HTTP layer.
+
+### Why Redis cache only for the default page fetch?
+Caching every combination of `(page, limit, filter)` would create complex cache key management and high memory usage. The strategy caches the full unfiltered task list on the default fetch (page 1, no filter), then paginates in memory on cache hits. Filtered or non-default page queries bypass cache and go directly to MongoDB.
+
+### Why Elasticsearch `multi_match` with `bool.filter`?
+The `bool.filter` clause restricts results to the authenticated user's tasks before scoring (no scoring overhead on the ownership filter). The `bool.must` + `multi_match` then scores relevance across `title` and `description`. This ensures correctness (users only see their tasks) and relevance (best matches first).
+
+### Why graceful degradation for Redis and Elasticsearch?
+Both services wrap every operation in try/catch. If Redis is down, every request falls through to MongoDB — no data loss. If Elasticsearch is down, `getTasks` still works; only `searchTasks` returns a service unavailable error. This makes the app resilient to infrastructure issues.
+
+### Why TypeScript strict mode on both client and server?
+`strict: true` plus `noUnusedLocals` and `noUnusedParameters` catches entire classes of runtime bugs at compile time. Both server and client share the same TypeScript version (7.x) to avoid type-checking discrepancies between the IDE and the compiler.
+
+### Why Vite instead of Create React App?
+Vite provides significantly faster development server startup and HMR (Hot Module Replacement) compared to CRA. It also has better TypeScript support out of the box and produces smaller production bundles.
+
+---
+
+## Security
+
+- All passwords hashed with **bcrypt** (12 salt rounds)
+- JWT tokens signed with **HS256**, expire in **7 days**
+- Every task mutation verifies **ownership** — users cannot modify other users' tasks
+- Bearer token attached to every GraphQL request via Apollo Client auth link
+- Missing or invalid tokens return `UNAUTHENTICATED` GraphQL errors
+- Duplicate email registration returns `CONFLICT` error
+
+---
+
+## Deployment (Not Required for Assessment)
+
+This project is designed to run locally. For production deployment:
+- Use **MongoDB Atlas** instead of local MongoDB
+- Use **Redis Cloud** or **AWS ElastiCache** instead of local Redis
+- Use **Elastic Cloud** instead of local Elasticsearch
+- Set `NODE_ENV=production` and use a strong `JWT_SECRET`
+- Build the client: `npm run build` — serve the `dist/` folder via nginx or a CDN
+
+---
+
+## Author
+
+**Sujan Kumar**
+GitHub: https://github.com/sujan7989
+Repository: https://github.com/sujan7989/kodertroop-task-manager
