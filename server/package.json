@@ -1,0 +1,49 @@
+{
+  "name": "kodertroop-server",
+  "version": "1.0.0",
+  "description": "KoderTroop Backend - Express, GraphQL, Apollo Server",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsc && node dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "verify:auth": "ts-node --transpile-only verify-auth.ts",
+    "verify:tasks": "ts-node --transpile-only verify-tasks.ts",
+    "verify:redis-elastic": "ts-node --transpile-only verify-redis-elastic.ts"
+  },
+  "keywords": [
+    "express",
+    "graphql",
+    "apollo",
+    "mongodb",
+    "redis",
+    "elasticsearch"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.19.2",
+    "apollo-server-express": "^3.13.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "4.19.2",
+    "graphql": "^16.8.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.2",
+    "redis": "^4.7.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "4.17.14",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.12.7",
+    "mongodb-memory-server": "^10.4.3",
+    "redis-memory-server": "^0.17.1",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^7.0.2"
+  }
+}
