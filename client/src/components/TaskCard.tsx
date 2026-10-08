@@ -27,14 +27,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index = 0, onToggleComplete, 
 
   return (
     <div
-      className={`group relative glass rounded-2xl p-4 lg:p-5 card-hover border transition-all duration-300 animate-fade-in-up ${
+      className={`group relative glass rounded-2xl p-4 lg:p-5 card-hover border transition-all duration-300 ${
         task.completed
           ? 'opacity-60 border-border/50'
           : isOverdue
           ? 'border-red-500/30 hover:border-red-500/50'
           : 'border-border hover:border-primary-500/40'
       } ${deleting ? 'scale-95 opacity-0' : ''}`}
-      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
+      style={{ animationDelay: `${delay}ms` }}
     >
       {/* Left accent bar */}
       <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-full transition-all duration-300 ${

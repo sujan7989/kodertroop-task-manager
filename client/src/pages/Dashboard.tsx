@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import {
@@ -8,6 +8,7 @@ import { Task, TaskPriority, CreateTaskInput, UpdateTaskInput, PaginatedTasks } 
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Plus, Filter, ChevronDown, SortAsc, CheckCircle2, Circle, LayoutList, RefreshCw } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import Navbar from '../components/Navbar';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
@@ -36,6 +37,30 @@ const Dashboard: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Task[] | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const filterBtnRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+
+  const openFilterMenu = () => {
+    if (filterBtnRef.current) {
+      const rect = filterBtnRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setShowFilterMenu((v) => !v);
+  };
+
+  useEffect(() => {
+    if (!showFilterMenu) return;
+    const handler = () => setShowFilterMenu(false);
+    window.addEventListener('scroll', handler, true);
+    window.addEventListener('resize', handler);
+    return () => {
+      window.removeEventListener('scroll', handler, true);
+      window.removeEventListener('resize', handler);
+    };
+  }, [showFilterMenu]);
 
   const filterCompleted = filterStatus === 'active' ? false : filterStatus === 'completed' ? true : undefined;
 
@@ -148,7 +173,8 @@ const Dashboard: React.FC = () => {
             {/* Filter & Sort */}
             <div className="relative">
               <button
-                onClick={() => setShowFilterMenu((v) => !v)}
+                ref={filterBtnRef}
+                onClick={openFilterMenu}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-200 ${
                   filterPriority !== 'all' || sortType !== 'date-desc'
                     ? 'bg-primary-500/10 border-primary-500/40 text-primary-400'
@@ -159,45 +185,6 @@ const Dashboard: React.FC = () => {
                 <span className="hidden sm:inline">Filter & Sort</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showFilterMenu ? 'rotate-180' : ''}`} />
               </button>
-
-              {showFilterMenu && (
-                <div
-                  className="absolute right-0 top-full mt-2 glass-strong border border-border/80 rounded-2xl shadow-modal py-2 min-w-[210px] z-20 animate-fade-in-scale"
-                  onMouseLeave={() => setShowFilterMenu(false)}
-                >
-                  <p className="px-4 py-1.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Priority</p>
-                  {(['all', 'high', 'medium', 'low'] as FilterPriority[]).map((p) => (
-                    <button key={p} onClick={() => { setFilterPriority(p); setShowFilterMenu(false); }}
-                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 transition-colors ${filterPriority === p ? 'text-primary-400 bg-primary-500/5' : 'text-slate-300 hover:text-white hover:bg-surface-elevated'}`}>
-                      {p !== 'all' && <span className={`w-2 h-2 rounded-full ${p === 'high' ? 'bg-red-400' : p === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'}`} />}
-                      {p === 'all' ? 'All Priorities' : `${p.charAt(0).toUpperCase() + p.slice(1)} Priority`}
-                    </button>
-                  ))}
-                  <div className="border-t border-border my-1.5" />
-                  <p className="px-4 py-1.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Sort by</p>
-                  {([
-                    { value: 'date-desc', label: '📅 Newest first' },
-                    { value: 'date-asc', label: '📅 Oldest first' },
-                    { value: 'title-asc', label: '🔤 Title A → Z' },
-                    { value: 'priority-high', label: '🔴 High priority first' },
-                    { value: 'priority-low', label: '🟢 Low priority first' },
-                  ] as { value: SortType; label: string }[]).map((opt) => (
-                    <button key={opt.value} onClick={() => { setSortType(opt.value); setShowFilterMenu(false); }}
-                      className={`w-full px-4 py-2 text-left text-sm transition-colors ${sortType === opt.value ? 'text-primary-400 bg-primary-500/5' : 'text-slate-300 hover:text-white hover:bg-surface-elevated'}`}>
-                      {opt.label}
-                    </button>
-                  ))}
-                  {(filterPriority !== 'all' || sortType !== 'date-desc') && (
-                    <>
-                      <div className="border-t border-border my-1.5" />
-                      <button onClick={() => { setFilterPriority('all'); setSortType('date-desc'); setShowFilterMenu(false); }}
-                        className="w-full px-4 py-2 text-left text-xs text-red-400 hover:bg-red-500/5 transition-colors">
-                        ✕ Clear filters
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* New Task */}
@@ -298,6 +285,62 @@ const Dashboard: React.FC = () => {
           onClose={handleCloseModal}
           isLoading={creating || updating}
         />
+      )}
+
+      {/* Filter dropdown — rendered via portal so it always floats above everything */}
+      {showFilterMenu && createPortal(
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setShowFilterMenu(false)}
+          />
+          {/* Dropdown */}
+          <div
+            className="fixed z-[9999] animate-fade-in-scale"
+            style={{ top: dropdownPos.top, right: dropdownPos.right }}
+          >
+            <div className="rounded-2xl shadow-2xl py-2 w-56 overflow-hidden"
+              style={{ background: '#1a2235', border: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <p className="px-4 py-1.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Priority</p>
+              {(['all', 'high', 'medium', 'low'] as FilterPriority[]).map((p) => (
+                <button key={p}
+                  onClick={() => { setFilterPriority(p); setShowFilterMenu(false); }}
+                  className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 transition-colors ${filterPriority === p ? 'text-primary-400 bg-primary-500/10' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}>
+                  {p !== 'all' && <span className={`w-2 h-2 rounded-full flex-shrink-0 ${p === 'high' ? 'bg-red-400' : p === 'medium' ? 'bg-amber-400' : 'bg-emerald-400'}`} />}
+                  {p === 'all' ? 'All Priorities' : `${p.charAt(0).toUpperCase() + p.slice(1)} Priority`}
+                </button>
+              ))}
+              <div className="border-t border-white/10 my-1.5 mx-2" />
+              <p className="px-4 py-1.5 text-xs font-bold text-slate-500 uppercase tracking-widest">Sort by</p>
+              {([
+                { value: 'date-desc',    label: '📅 Newest first' },
+                { value: 'date-asc',     label: '📅 Oldest first' },
+                { value: 'title-asc',    label: '🔤 Title A → Z' },
+                { value: 'priority-high',label: '🔴 High priority first' },
+                { value: 'priority-low', label: '🟢 Low priority first' },
+              ] as { value: SortType; label: string }[]).map((opt) => (
+                <button key={opt.value}
+                  onClick={() => { setSortType(opt.value); setShowFilterMenu(false); }}
+                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${sortType === opt.value ? 'text-primary-400 bg-primary-500/10' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}>
+                  {opt.label}
+                </button>
+              ))}
+              {(filterPriority !== 'all' || sortType !== 'date-desc') && (
+                <>
+                  <div className="border-t border-white/10 my-1.5 mx-2" />
+                  <button
+                    onClick={() => { setFilterPriority('all'); setSortType('date-desc'); setShowFilterMenu(false); }}
+                    className="w-full px-4 py-2.5 text-left text-xs text-red-400 hover:bg-red-500/10 transition-colors">
+                    ✕ Clear filters
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </>,
+        document.body
       )}
     </div>
   );
