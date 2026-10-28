@@ -34,6 +34,11 @@ const startServer = async (): Promise<void> => {
       await ensureTasksIndex();
     }
 
+    // Pre-warm bcrypt so first login is fast
+    import('bcryptjs').then((bcrypt) => {
+      bcrypt.hash('warmup', 10).catch(() => undefined);
+    }).catch(() => undefined);
+
     const app = express();
 
     app.use(cors({

@@ -52,19 +52,19 @@ const toastConfig: Record<ToastType, {
   iconBg: string;
 }> = {
   success: {
-    icon: <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 flex-shrink-0" />,
+    icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />,
     barColor: 'bg-emerald-500',
     borderColor: 'border-emerald-500/25',
     iconBg: 'bg-emerald-500/15',
   },
   error: {
-    icon: <XCircle className="w-4.5 h-4.5 text-red-400 flex-shrink-0" />,
+    icon: <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />,
     barColor: 'bg-red-500',
     borderColor: 'border-red-500/25',
     iconBg: 'bg-red-500/15',
   },
   info: {
-    icon: <Info className="w-4.5 h-4.5 text-primary-400 flex-shrink-0" />,
+    icon: <Info className="w-5 h-5 text-primary-400 flex-shrink-0" />,
     barColor: 'bg-primary-500',
     borderColor: 'border-primary-500/25',
     iconBg: 'bg-primary-500/15',

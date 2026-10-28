@@ -28,9 +28,8 @@ export const apolloClient = new ApolloClient({
     typePolicies: {
       Query: {
         fields: {
-          // Merge paginated task results correctly
           getTasks: {
-            keyArgs: ['filter'],
+            keyArgs: ['filter', 'page', 'limit'],
             merge(_existing, incoming) {
               return incoming;
             },
