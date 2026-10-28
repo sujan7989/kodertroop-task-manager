@@ -58,6 +58,8 @@ const taskSchema = new Schema<TaskDocument>(
 );
 
 taskSchema.index({ userId: 1, createdAt: -1 });
+taskSchema.index({ userId: 1, completed: 1 });
+taskSchema.index({ title: 'text', description: 'text' });
 
 export const TaskModel: Model<TaskDocument> =
   mongoose.models.Task ?? mongoose.model<TaskDocument>('Task', taskSchema);
