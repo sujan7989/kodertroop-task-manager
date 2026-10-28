@@ -47,7 +47,22 @@ const Dashboard: React.FC = () => {
   const openFilterMenu = () => {
     if (filterBtnRef.current) {
       const rect = filterBtnRef.current.getBoundingClientRect();
-      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+      const dropdownHeight = 380; // approximate max height of dropdown
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Open upward if not enough space below
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        setDropdownPos({
+          top: rect.top - dropdownHeight - 8 + window.scrollY,
+          right: window.innerWidth - rect.right,
+        });
+      } else {
+        setDropdownPos({
+          top: rect.bottom + 8,
+          right: window.innerWidth - rect.right,
+        });
+      }
     }
     setShowFilterMenu((v) => !v);
   };
@@ -414,7 +429,7 @@ const Dashboard: React.FC = () => {
         <>
           <div className="fixed inset-0 z-[9998]" onClick={() => setShowFilterMenu(false)} />
           <div className="fixed z-[9999] animate-fade-in-scale" style={{ top: dropdownPos.top, right: dropdownPos.right }}>
-            <div className="rounded-2xl shadow-2xl py-2 w-56 overflow-hidden" style={{ background: '#1a2235', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="rounded-2xl shadow-2xl py-2 w-56 overflow-y-auto max-h-[80vh]" style={{ background: '#1a2235', border: '1px solid rgba(255,255,255,0.08)' }}>
               <p className="px-4 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Priority</p>
               {(['all', 'high', 'medium', 'low'] as FilterPriority[]).map((p) => (
                 <button key={p}
