@@ -124,28 +124,46 @@ const searchTasksResolver = async (
   if (trimmed.length < 2) {
     throw new BadRequestError('Search query must be at least 2 characters');
   }
-  const hits = await searchTasksService(user.id, trimmed);
-  const hitIds = hits.map((h) => h.id);
-  if (hitIds.length === 0) return [];
-  const validObjectIdStrings: string[] = [];
-  for (const id of hitIds) {
-    if (mongoose.isValidObjectId(id)) validObjectIdStrings.push(id);
+
+  // Try Elasticsearch first, fall back to MongoDB regex search if ES is unavailable
+  try {
+    const hits = await searchTasksService(user.id, trimmed);
+    const hitIds = hits.map((h) => h.id);
+    if (hitIds.length === 0) return [];
+    const validObjectIdStrings: string[] = [];
+    for (const id of hitIds) {
+      if (mongoose.isValidObjectId(id)) validObjectIdStrings.push(id);
+    }
+    if (validObjectIdStrings.length === 0) return [];
+    const docs = await TaskModel.find({
+      _id: { $in: validObjectIdStrings.map((id) => new Types.ObjectId(id)) },
+      userId: new Types.ObjectId(user.id),
+    }).exec();
+    const byId = new Map<string, PublicTask>();
+    for (const doc of docs) {
+      byId.set(doc._id.toHexString(), toPublicTask(doc));
+    }
+    const ordered: PublicTask[] = [];
+    for (const id of hitIds) {
+      const item = byId.get(id);
+      if (item !== undefined) ordered.push(item);
+    }
+    return ordered;
+  } catch (_esError) {
+    // ES unavailable — fall back to MongoDB regex search
+    const regex = new RegExp(trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const docs = await TaskModel.find({
+      userId: new Types.ObjectId(user.id),
+      $or: [
+        { title: { $regex: regex } },
+        { description: { $regex: regex } },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .exec();
+    return docs.map(toPublicTask);
   }
-  if (validObjectIdStrings.length === 0) return [];
-  const docs = await TaskModel.find({
-    _id: { $in: validObjectIdStrings.map((id) => new Types.ObjectId(id)) },
-    userId: new Types.ObjectId(user.id),
-  }).exec();
-  const byId = new Map<string, PublicTask>();
-  for (const doc of docs) {
-    byId.set(doc._id.toHexString(), toPublicTask(doc));
-  }
-  const ordered: PublicTask[] = [];
-  for (const id of hitIds) {
-    const item = byId.get(id);
-    if (item !== undefined) ordered.push(item);
-  }
-  return ordered;
 };
 
 export const resolvers = {

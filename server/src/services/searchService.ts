@@ -16,7 +16,31 @@ const statusCodeFromErr = (err: unknown): number | undefined => {
 export const ensureTasksIndex = async (): Promise<void> => {
   if (!isElasticReady()) return;
   try {
-    await esClient.indices.create({ index: TASKS_INDEX });
+    const exists = await esClient.indices.exists({ index: TASKS_INDEX });
+    if (exists) {
+      logger.info('Elasticsearch tasks index already exists', { index: TASKS_INDEX });
+      return;
+    }
+    await esClient.indices.create({
+      index: TASKS_INDEX,
+      mappings: {
+        properties: {
+          title:       { type: 'text', analyzer: 'standard' },
+          description: { type: 'text', analyzer: 'standard' },
+          userId:      { type: 'keyword' },
+          completed:   { type: 'boolean' },
+          priority:    { type: 'keyword' },
+          dueDate:     { type: 'date' },
+          createdAt:   { type: 'date' },
+          updatedAt:   { type: 'date' },
+        },
+      },
+      settings: {
+        number_of_shards:   1,
+        number_of_replicas: 0,
+        refresh_interval:   '1s',
+      },
+    });
     logger.info('Elasticsearch tasks index created successfully', { index: TASKS_INDEX });
   } catch (err) {
     const code = statusCodeFromErr(err);

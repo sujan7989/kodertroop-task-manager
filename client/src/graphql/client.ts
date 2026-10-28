@@ -1,27 +1,50 @@
-import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  from,
+  ApolloLink,
+} from '@apollo/client';
 
 const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql',
+  uri: import.meta.env.VITE_GRAPHQL_URL ?? 'http://localhost:4000/graphql',
 });
 
-const authLink = setContext((_, { headers }) => {
+// Attach JWT token to every request
+const authLink = new ApolloLink((operation, forward) => {
   const token = localStorage.getItem('token');
-  return {
+  operation.setContext(({ headers = {} }: { headers?: Record<string, string> }) => ({
     headers: {
       ...headers,
       authorization: token ? `Bearer ${token}` : '',
     },
-  };
+  }));
+  return forward(operation);
 });
 
 export const apolloClient = new ApolloClient({
   link: from([authLink, httpLink]),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          // Merge paginated task results correctly
+          getTasks: {
+            keyArgs: ['filter'],
+            merge(_existing, incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+    },
+  }),
+  connectToDevTools: import.meta.env.DEV,
   defaultOptions: {
     watchQuery: {
       fetchPolicy: 'cache-and-network',
       errorPolicy: 'all',
+      notifyOnNetworkStatusChange: true,
     },
     query: {
       fetchPolicy: 'network-only',

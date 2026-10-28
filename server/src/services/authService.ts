@@ -16,7 +16,7 @@ import {
 import { logger } from '../utils/logger';
 import mongoose from 'mongoose';
 
-const BCRYPT_ROUNDS = 12;
+const BCRYPT_ROUNDS = 10;
 
 export interface RegisterInput {
   name: string;

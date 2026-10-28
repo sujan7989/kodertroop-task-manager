@@ -7,10 +7,7 @@
     "dev": "tsc && node dist/index.js",
     "build": "tsc",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit",
-    "verify:auth": "ts-node --transpile-only verify-auth.ts",
-    "verify:tasks": "ts-node --transpile-only verify-tasks.ts",
-    "verify:redis-elastic": "ts-node --transpile-only verify-redis-elastic.ts"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "express",
@@ -41,6 +38,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.12.7",
     "mongodb-memory-server": "^10.4.3",
+    "nodemon": "^3.1.14",
     "redis-memory-server": "^0.17.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
